@@ -39,8 +39,6 @@ ELSIF nature = 'Bretelle' THEN RETURN 70;
 ELSIF nature = 'Type autoroutier' THEN 
     IF cpx_classement_administratif IN ('Autoroute', 'Autoroute/Route nommée') THEN
     -- vraie autoroute
-    SELECT troncon_is_autoroute(cleabs) INTO vraie_autoroute;
-    IF vraie_autoroute THEN
         IF urbain THEN RETURN 90;
         ELSE return 130;
         END IF;
