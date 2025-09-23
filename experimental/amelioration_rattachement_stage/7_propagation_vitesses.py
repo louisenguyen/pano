@@ -127,7 +127,7 @@ df_final = pd.merge(df_vla, df_source, on='id_segment', how='outer')
 
 
     # Enfin on fusionne avec la table arete d'origine
-troncon_vla_finale = arete.drop(columns=['vla_sens_direct','vla_sens_inverse','source_vla_direct','source_vla_inverse','vla_estimee']) # on supprime les colonnes qu'on a màj
+troncon_vla_finale = arete.drop(columns=['vla_sens_direct','vla_sens_inverse','source_vla_direct','source_vla_inverse','vla_estimee', 'source_id', 'target_id']) # on supprime les colonnes qu'on a màj
 troncon_vla_finale = pd.merge(troncon_vla_finale, df_final, on='id_segment', how='left') # on remet les colonnes mises à jour grâce à une jointure avec df_final
 
 # 4. Exportation vers postgis

@@ -1,6 +1,6 @@
 -- FUNCTION: public.compute_vla_estimee(character varying, geometry, character varying, boolean, character varying, character varying, character varying, character varying, character varying, character varying)
- 
--- DROP FUNCTION IF EXISTS public.compute_vla_estimee(character varying, geometry, character varying, boolean, character varying, character varying, character varying, character varying, character varying, character varying);
+
+--DROP FUNCTION IF EXISTS public.compute_vla_estimee(character varying, geometry, character varying, boolean, character varying, character varying, character varying, character varying, character varying, character varying);
  
 CREATE OR REPLACE FUNCTION public.compute_vla_estimee(
 	cleabs character varying,
@@ -12,7 +12,8 @@ CREATE OR REPLACE FUNCTION public.compute_vla_estimee(
 	acces_vehicule_leger character varying,
 	nombre_de_voies character varying,
 	nature_de_la_restriction character varying,
-	sens_de_circulation character varying)
+	sens_de_circulation character varying,
+    cpx_classement_administratif character varying)
     RETURNS integer
     LANGUAGE 'plpgsql'
     COST 100
@@ -36,6 +37,7 @@ ELSIF nature = 'Bretelle' THEN RETURN 70;
  
 -- Cas des troncons de type autoroutier
 ELSIF nature = 'Type autoroutier' THEN 
+    IF cpx_classement_administratif IN ('Autoroute', 'Autoroute/Route nommée') THEN
     -- vraie autoroute
     SELECT troncon_is_autoroute(cleabs) INTO vraie_autoroute;
     IF vraie_autoroute THEN
@@ -106,7 +108,8 @@ CREATE TABLE troncon_departemental AS -- selection des champs de la BD Topo util
         acces_vehicule_leger,
         nombre_de_voies,
         nature_de_la_restriction,
-        sens_de_circulation) AS vla_estimee --calcul du champ vla_estimee
+        sens_de_circulation,
+        cpx_classement_administratif) AS vla_estimee --calcul du champ vla_estimee
     FROM troncon_de_route_bdtopo
     -- Filtrage des tronçons praticables et candidats au rattachement + propagation des panneaux vitesse
 	WHERE cpx_classement_administratif IN ('Départementale', 'Départementale/Route nommée')
