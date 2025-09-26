@@ -74,7 +74,7 @@ END;
  
 $BODY$;
  
-ALTER FUNCTION public.compute_vla_estimee(character varying, geometry, character varying, boolean, character varying, character varying, character varying, character varying, character varying, character varying)
+ALTER FUNCTION public.compute_vla_estimee(character varying, geometry, character varying, boolean, character varying, character varying, character varying, character varying, character varying, character varying, character varying)
     OWNER TO postgres;
 
 
