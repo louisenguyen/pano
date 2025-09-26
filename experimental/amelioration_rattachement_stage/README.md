@@ -1,39 +1,38 @@
 # Contexte
-Ce travail exploratoire a été réalisé dans le cadre d'un stage (avril-septembre 2025) avec pour objectif de réfléchir à l'élaboration d'une base de données routières navigable et souveraine (BD Nav) à partir de la BD Topo. Un enjeu principal de cette BD Nav est de pouvoir stocker une VLA (vitesse limite autorisée) associée aux tronçons de route, qui servira par la suite à dériver plusieurs vitesses selon différents profils (véhicule léger, prioritaire, transport excpetionnel, etc). 
-Cette VLA peut être obtenue à partir d'un calcul sur les attributs des tronçons ("VLA estimée"), ou bien à partir des panneaux de limitations de vitesses. Dans le cadre de la BD Nav, elle pourra aussi être renseignée de manière collaborative par différents gestionnaires administratifs. 
+Ce travail exploratoire a été réalisé dans le cadre d'un stage (avril-septembre 2025) avec pour objectif de réfléchir à l'élaboration d'une base de données routières navigable et souveraine (BD Nav) à partir de la BD Topo. Un enjeu principal de cette BD Nav est de pouvoir stocker une VLA (vitesse limite autorisée) associée aux tronçons de route, qui servira par la suite à dériver plusieurs vitesses selon différents profils. Cette VLA peut être obtenue à partir d'un calcul sur les attributs des tronçons ("VLA estimée"), ou bien à partir des panneaux de limitations de vitesses. Dans le cadre de la BD Nav, elle pourrait aussi être renseignée de manière collaborative par différents gestionnaires administratifs. 
 
 Le passage d'une vitesse stockée dans une BD panneaux à une vitesse stockées par les tronçons dans la BD Nav constitue l'enjeu de la méthodologie proposée ici. 
 
 La Loire Atlantique a été choisie comme zone de test car deux jeux de données de panneaux étaient disponibles sur les limitation de vitesse : ceux de la Métropole de Nantes et du CD 44. 
 
 
-# Objectifs et principe
+# Objectifs et principes
 L'objectif est de construire une méthodologie pour obtenir une VLA panneau, ou estimation le cas échéant, au sein de la BD Nav. La table finale est une table de tronçons redécoupés par les panneaux et qui possèdent les attributs de la BD Topo utiles pour le calcul des vitesses réelles et le calcul d'itinéraires par la suite. Elle comprend aussi 4 nouveaux champs : vla_sens_direct, vla_sens_inverse qui stockent la VLA panneau ou estimation, et les champs source_vla_direct et source_vla_inverse qui indiquent la source de la vla obtenue.
-Les grands principes de cette méthodes sont les suivants :
-- Rattachement des panneaux au réseau routier : à partir des attributs associés aux panneaux et d'informations calculées à partir de leur position
+Les grands principes de cette méthode sont les suivants :
+- Rattachement des panneaux au réseau routier 
 - Segmentation du réseau par les panneaux rattachés, après avoir optimisé le rattachement pour limiter les points de découpe
 - Attribution des vitesses des panneaux à leur segment initial et dans la bonne direction
-- Propagation des vitesses aux autres segment à partir des segments ayant une vitesse source : à travers graphe orienté et un principe de parcours en largeur (BFS)
+- Propagation des vitesses aux autres segment à partir des segments ayant une vitesse source : à travers un parcours de graphe en largeur (BFS)
 
-Lorsque les panneaux indiquent une fin de limitation de vitesse, on attribue au segment la vla estimée, calculée au préalable à partir des attributs des tronçons d'origine. Ainsi, les segments de la table finale se retrouvent tous, en théorie, avec une VLA dans les 2 sens, obtenue par panneau ou estimtation.
+Lorsque les panneaux indiquent une fin de limitation de vitesse, on attribue au segment la VLA estimée, calculée au préalable à partir des attributs des tronçons d'origine. Ainsi, les segments de la table finale se retrouvent tous, en théorie, avec une VLA dans les 2 sens, obtenue par panneau ou estimtation.
 
 
 # Datasets
 
-Panneaux : panneaux_vitesse_cd44_standard.sql
-Jeu de données déjà mis au modèle de la bd panneau
+Panneaux : [panneaux_vitesse_cd44_standard.gpkg] (panneaux_vitesses_cd44_standard.gpkg)
+Jeu de données déjà mis au modèle de la BD panneaux
 
 Routes : [troncon_de_route_44](https://data.geopf.fr/telechargement/download/BDTOPO/BDTOPO_3-5_TRANSPORT_GPKG_LAMB93_FXX_2025-06-15/BDTOPO_3-5_TRANSPORT_GPKG_LAMB93_FXX_2025-06-15.7z)
 
 
 # Installation des composants
 
-Installation postgresql (version) / postgis, python (version, venv ?)
+Installation Postgresql (17) / Postgis, Python (version 3.13, venv)
 
 # Intégration des datasets dans la base postgresql
 
-Pre-requis : filtrer la table troncon_de_route du gpkg sur le département 44 (  ), créer une base postgresql, importer la table filtrée troncon_de_route du gpkg dedans sous le nom troncon_de_route_bd_topo
-Avec le DB manager de qgis, faire une connexion postgis a la bd postgres pour intégrer en base la table panneaux_vitesse_cd44.gpkg
+Pre-requis : filtrer la table troncon_de_route du gpkg sur le département 44, créer une base postgresql, importer la table filtrée troncon_de_route du gpkg dedans sous le nom troncon_de_route_bd_topo (avec DB Manager sous QGIS).
+Intégrer également la table panneaux_vitesse_cd44_standard.gpkg dans la base postgres.
 
 # Lancement des scripts
 
@@ -58,10 +57,10 @@ outputs :
 
 script(s) : [2_rattachement_panneaux_cd44.sql](2_rattachement_panneaux_cd44.sql)
 inputs : tables paneaux_vitesses_cd44_standard et troncon_departemental
-outputs : rattachement_cd44
+outputs : table rattachement_cd44
 
 
-## Préparation du graphe
+## Redécoupage du réseau par les panneaux
 
 
 ### Optimisation du rattachement
@@ -87,7 +86,7 @@ outputs : table troncon_departemental_decoupe avec 2 nouveaux champs vla_sens_di
 ### Préparation du graphe
 script : [6_preparation_graphe.sql] (6_preparation_graphe.sql)
 inputs : table troncon_departemental_decoupe
-outputs : table noeud correpondant aux extremites des tronçons et table arete correspondant aux tronçons définis par leur noeud de départ et leur noeud d'arrivée.
+outputs : table noeud correpondant aux extremites des tronçons et table arete correspondant aux tronçons définis par leur noeud de départ et leur noeud d'arrivée
 
 ### Propagation des vitesses dans le graphe
 
